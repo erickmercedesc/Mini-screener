@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ref } from 'vue';
 import Table from './components/Table.vue'
 import PairModal from './components/PairModal.vue'
