@@ -38,17 +38,32 @@ onMounted(async () => {
     const loadedPairs = await loadPair();
     
     for (const pair of loadedPairs) {
-        const klines = await Pair.getKlines(`${pair.name}USDT`);
+        try {
+            const klines = await Pair.getKlines(`${pair.name}USDT`);
 
-        pairs.value.push({
-            name: `${pair.name}USDT`,
-            price: klines.last,
-            rsTotal: Math.round((klines.getRelativeScore() / refKline.getRelativeScore()) * 100),
-            rs1M: Math.round((klines.getPerformance(30) / refKline.getPerformance(30)) * 100),
-            rs3M: Math.round((klines.getPerformance(30 * 3) / refKline.getPerformance(30 * 3)) * 100),
-            rs6M: Math.round((klines.getPerformance(30 * 6) / refKline.getPerformance(30 * 6)) * 100),
-            rs12M: Math.round((klines.getPerformance(30 * 12) / refKline.getPerformance(30 * 12)) * 100),
-        });
+            pairs.value.push({
+                name: `${pair.name}USDT`,
+                price: klines.last,
+                rsTotal: Math.round((klines.getRelativeScore() / refKline.getRelativeScore()) * 100),
+                rs1M: Math.round((klines.getPerformance(30) / refKline.getPerformance(30)) * 100),
+                rs3M: Math.round((klines.getPerformance(30 * 3) / refKline.getPerformance(30 * 3)) * 100),
+                rs6M: Math.round((klines.getPerformance(30 * 6) / refKline.getPerformance(30 * 6)) * 100),
+                rs12M: Math.round((klines.getPerformance(30 * 12) / refKline.getPerformance(30 * 12)) * 100),
+            });            
+        } catch (error) {
+            console.error(error);
+
+            pairs.value.push({
+                name: `${pair.name}USDT - Error`,
+                price: 0,
+                rsTotal: 0,
+                rs1M: 0,
+                rs3M: 0,
+                rs6M: 0,
+                rs12M: 0,
+            });
+        }
+
     }
     
 });
