@@ -20,7 +20,12 @@ export class KlinesGroup {
     }
 
     getDayClosePrice(day: number) {
-        return this.klines[this.klines.length - day - 1].closePrice;
+        try {
+            return this.klines[this.klines.length - day - 1].closePrice;
+        } catch (e) {
+            console.error(e);
+            return 0;
+        }
     }
 
     getPerformance(day: number) {
