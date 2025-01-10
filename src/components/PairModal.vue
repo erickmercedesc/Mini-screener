@@ -1,37 +1,45 @@
-<script setup lang="ts">
-import { ref } from 'vue';
+<script setup>
+import { onMounted, ref } from 'vue';
 import PrimaryButton from './PrimaryButton.vue';
+import { generateClient } from 'aws-amplify/data';
+
+const client = generateClient();
 
 defineExpose({
     open: () => showModal.value = true,
     close: () => showModal.value = false
 });
 
-const loadPair = () => {
-    const pair = localStorage.getItem('pairs') || '[]';
-    return JSON.parse(pair);
+const loadPair = async () => {
+    const { data: items, errors } = await client.models.Pair.list();
+    pairs.value = items;
 }
 
-const addPair = () => {
+const addPair = async () => {
     const pairName = prompt("Nombre del par");
     if(!pairName) return;
 
+    console.log(pairs)
     if(pairs.value.includes(pairName)) {
         alert('El par ya existe');
         return;
     }
 
-    pairs.value.push(pairName);
-    localStorage.setItem('pairs', JSON.stringify(pairs.value));
+    await client.models.Pair.create({ name: pairName });
+    await loadPair();
 }
 
-const removePair = (pairName: string) => {
-    pairs.value = pairs.value.filter((p: string) => p !== pairName);
-    localStorage.setItem('pairs', JSON.stringify(pairs.value));
+const removePair = async (id) => {
+    await client.models.Pair.delete(id);
+    await loadPair();
 }
 
 const showModal = ref(false);
-let pairs = ref(loadPair());
+let pairs = ref([]);
+
+onMounted(() => {
+    loadPair();
+});
 
 </script>
 
@@ -60,7 +68,7 @@ let pairs = ref(loadPair());
                     <tbody>
                         <tr v-for="pair in pairs" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                {{ pair }}
+                                {{ pair.name }}
                             </th>
                             <td class="py-4 text-center">
                                 <button @click="removePair(pair)" class="text-red-600">
