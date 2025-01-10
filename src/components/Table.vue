@@ -1,7 +1,9 @@
 <script setup>
+import { generateClient } from 'aws-amplify/data';
 import { computed, onMounted, ref } from 'vue';
 import Pair from '../pair';
 
+const client = generateClient();
 const pairs = ref([]);
 
 const sortedPairs = computed(() => {
@@ -21,9 +23,9 @@ const sortedPairs = computed(() => {
 const sortBy = ref(null);
 const sortDirection = ref('asc');
 
-const loadPair = () => {
-    const pair = localStorage.getItem('pairs') || '[]';
-    return JSON.parse(pair);
+const loadPair = async () => {
+    const { data: items, errors } = await client.models.Pair.list();
+    return items;
 }
 
 const changeSort = (by) => {
@@ -33,13 +35,13 @@ const changeSort = (by) => {
 
 onMounted(async () => {
     const refKline = await Pair.getKlines('BTCUSDT');
-    const loadedPairs = loadPair();
+    const loadedPairs = await loadPair();
     
     for (const pair of loadedPairs) {
-        const klines = await Pair.getKlines(`${pair}USDT`);
+        const klines = await Pair.getKlines(`${pair.name}USDT`);
 
         pairs.value.push({
-            name: `${pair}USDT`,
+            name: `${pair.name}USDT`,
             price: klines.last,
             rsTotal: Math.round((klines.getRelativeScore() / refKline.getRelativeScore()) * 100),
             rs1M: Math.round((klines.getPerformance(30) / refKline.getPerformance(30)) * 100),
